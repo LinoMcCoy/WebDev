@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
@@ -8,14 +9,17 @@ app.use(express.static("public"));
 app.engine("ejs", require("ejs").renderFile);
 app.set("view engine", "ejs");
 
-const mongoUrl = "mongodb://127.0.0.1:27017/f1";
+const user= process.env.DB_USER;
+const pass= process.env.DB_PASS
+const mongoUrl = `mongodb+srv://${user}:${pass}@cluster0.s37knln.mongodb.net/f1?retryWrites=true&w=majority`;
 mongoose.connect(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true });
 
 // Definition of a schema
 const teamSchema = new mongoose.Schema({
   id: Number,
-  name: String,
-  nationality: String,
+  code: String,
+  label: String,
+  country: String,
   url: String,
 });
 teamSchema.set("strictQuery", true);
@@ -53,8 +57,34 @@ let countries = [
   { code: "DEN", label: "Denmark" },
 ];
 
+let teams=[];
+
+let teamsRaw=[
+  { code: "mercedes", label: "Mercedes", country: "GER" },
+  { code: "aston_martin", label: "Aston Martin", country: "ENG" },
+  { code: "alpine", label: "Alpine", country: "FRA" },
+  
+];
+
+app.use("/", async (req,res, next) => {
+  //TODO: Get the name of the teams first from DB to whow in the form
+  if(teams.lenght === 0){
+    //load info from db
+    var teamsDB=await Team.find({}).exec()
+    if (!Array.isArray(teamsDB)||teamsDB.length === 0){
+      await Team.insertMany(teamsRaw).then(() =>{
+        console.log("Teams loaded")
+      })
+      
+    }else{
+      teams=teamsDB;
+    }
+  }
+  next();
+});
+
 app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/public/html/index.html");
+  res.render("index", {countries, teams});
 });
 
 app.listen(3000, (err) => {
