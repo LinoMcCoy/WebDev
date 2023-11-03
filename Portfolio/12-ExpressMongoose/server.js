@@ -57,34 +57,82 @@ let countries = [
   { code: "DEN", label: "Denmark" },
 ];
 
-let teams=[];
+let teams =[];
+let drivers= [];
 
 let teamsRaw=[
   { code: "mercedes", label: "Mercedes", country: "GER" },
   { code: "aston_martin", label: "Aston Martin", country: "ENG" },
   { code: "alpine", label: "Alpine", country: "FRA" },
-  
+  { code: "haas_f1", label: "Haas F1 Team", country: "USA" },
+  { code: "red_bull", label: "Red Bull Racing", country: "AUS" },
+  { code: "alpha_tauri", label: "Alpha Tauri", country: "ITA" },
+  { code: "alpha_romeo", label: "Alpha Romeo", country: "ITA" },
+  { code: "ferrari", label: "Ferrari", country: "ITA" },
+  { code: "williams", label: "Williams", country: "ENG" },
+  { code: "mc_laren", label: "McLaren", country: "ENG" },
 ];
 
 app.use("/", async (req,res, next) => {
   //TODO: Get the name of the teams first from DB to whow in the form
-  if(teams.lenght === 0){
+  if(teams.length === 0){
     //load info from db
     var teamsDB=await Team.find({}).exec()
     if (!Array.isArray(teamsDB)||teamsDB.length === 0){
-      await Team.insertMany(teamsRaw).then(() =>{
-        console.log("Teams loaded")
+      await Team.insertMany(teamsRaw)
+      .then(() => {
+        console.log("Teams loaded");
       })
-      
+      .catch((error) => {
+        console.error(error);
+      });
+      await Team.find({})
+      .then((docs) => {
+        console.log("Found the following teams");
+        console.log(docs);
+        teams = docs;
+      })
+      .catch((error) => {
+        console.error(error);
+      });   
     }else{
-      teams=teamsDB;
+      teams = teamsDB;
     }
   }
   next();
 });
 
 app.get("/", (req, res) => {
-  res.render("index", {countries, teams});
+  res.render("index", {countries, teams, drivers});
+});
+
+app.post("/driver", async (req, res) => {
+  //ToDo: Get info from form
+  var team = await Team.findOne({code: { $eq: req.body.team } }).exec();
+  var driver = new Driver({
+    num: req.body.num,
+    code: req.body.code,
+    forename: req.body.name,
+    surname: req.body.lname,
+    dob: req.body.dob,
+    nationality: req.body.nation,
+    url: req.body.url,
+    team: team,
+  });
+  driver.save();
+  drivers.push(driver);
+
+/*
+await Driver.insertOne(driver)
+      .then(() => {
+        console.log("Driver Saved");
+        drivers.push(driver);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+*/
+  res.redirect("/");
 });
 
 app.listen(3000, (err) => {
