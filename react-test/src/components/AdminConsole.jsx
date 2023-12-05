@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import Card from './Card';
-import contacts from "../Data/data";
+import contacts from "../data/data";
 
 function AdminConsole(){
     let allContacts;

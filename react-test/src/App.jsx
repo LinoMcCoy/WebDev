@@ -1,38 +1,38 @@
-import logo from './logo.svg';
+import React, {useState} from "react";
 import './App.css';
+import AdminConsole from "./Components/AdminConsole";
+import Archive from "./Components/Archive";
+import Login from "./Components/Login";
+import Header from "./Components/Header";
+import SecretStuff from "./Components/SecretStuff";
+import MyNavBar from "./Components/MyNavBar";
+import {Routes, Route, Navigate} from "react-router-dom";
+
 
 function App() {
-  const currentDate= new Date();
-  const [isLoggedIn(!isLoggedIn)       ]
+  const currentDate = new Date();
+  const [isLoggedIn, setIsLoggedIn] = useState(false); //Added once the logged in page was completed with the prevValue modificaions
 
-
-  const customStyle= {
-    color: "blue",
-    fontSize: "20px",
-    border: "1px solid black",
-  };
-
-  const num= Math.floor(Math.random()*10);
-  const name= "Lino";
-  const lname= "Rangel";
-  
-
-  if(num % 2 == 0){
-    customStyle.background= "gray"; 
-  } else{
-    customStyle.background= "yellow"; 
+  function updateLogState(){
+    setIsLoggedIn(!isLoggedIn);
   }
 
-  const img= "https://picsum.photos/200";
+  function CheckLogStatus(props){
+    return isLoggedIn ? <props.component/> : <Navigate to='/'/>;
+  }
+
 
   return (
     <div className="App">
-      <Header/>
-      <h1 style={customStyle}>Hello World, I am {name + " " + lname}</h1>
-      <img alt= "RandomImage" src={img}></img>
-      <p>This is my first react app. My lucky number is {num}</p>
-      <p className='footer'>Copyright {currentDate.getFullYear()}</p>
-       
+        <Header/>
+        <MyNavBar/>
+      <Routes>
+        <Route path="/" element={ isLoggedIn ? (<Navigate to='/admin'/>) : (<Login listener={updateLogState}/>)}/>
+        <Route path="/admin" element={<CheckLogStatus component={AdminConsole}/>}/>
+        <Route path="/archive" element={<CheckLogStatus component={AdminConsole}/>}/>
+        <Route path="/secret" element={<CheckLogStatus component={AdminConsole}/>}/>
+      </Routes>
+        <p className='footer'> Copyright {currentDate.getFullYear()}</p>
     </div>
   );
 }
